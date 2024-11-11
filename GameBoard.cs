@@ -18,6 +18,7 @@ public class GameBoard : DrawableGameComponent
     public IntVector2 TileSize = new IntVector2(64, 64);
     public int Spacing = 10;
     private GamePiece _selectedPiece;
+    private GameBoardState _gameBoardState = GameBoardState.AwaitingInput;
     
     public GameBoard(Game game) : base(game)
     {
@@ -62,6 +63,8 @@ public class GameBoard : DrawableGameComponent
             for (int j = 0; j < Rows; j++)
             {
                 var newPiece = GamePieceFactory.GenerateRandom(Game, new IntVector2(i, j));
+                newPiece.Bounds = GridRects[i, j];
+                Game.Components.Add(newPiece);
                 GamePieces[i, j] = newPiece;
             }
         }
@@ -69,9 +72,11 @@ public class GameBoard : DrawableGameComponent
 
     public void SwapPieces(GamePiece piece1, GamePiece piece2)
     {
-        (piece1.Location, piece2.Location) = (piece2.Location, piece1.Location);
-        GamePieces[piece1.Location.X, piece1.Location.Y] = piece1;
-        GamePieces[piece2.Location.X, piece2.Location.Y] = piece2;
+        (piece1.GridPosition, piece2.GridPosition) = (piece2.GridPosition, piece1.GridPosition);
+        piece1.MoveTo(piece2.Bounds.Location);
+        piece2.MoveTo(piece1.Bounds.Location);
+        GamePieces[piece1.GridPosition.X, piece1.GridPosition.Y] = piece1;
+        GamePieces[piece2.GridPosition.X, piece2.GridPosition.Y] = piece2;
         CascadeMatches();
     }
 
@@ -101,6 +106,10 @@ public class GameBoard : DrawableGameComponent
                         if (currentRow == 0)
                         {
                             replacementPiece = GamePieceFactory.GenerateRandom(Game, new IntVector2(i, currentRow));
+                            // replacementPiece.Position = GridRects[i, j].Location.ToVector2();
+                            // replacementPiece.TargetPosition = replacementPiece.Position;
+                            replacementPiece.Bounds = GridRects[i, j];
+                            Game.Components.Add(replacementPiece);
                         }
                         else
                         {
@@ -110,7 +119,7 @@ public class GameBoard : DrawableGameComponent
                         GamePieces[i, j] = replacementPiece;
                         if (GamePieces[i, j] is not null)
                         {
-                            GamePieces[i, j].Location = new IntVector2(i, j);
+                            GamePieces[i, j].GridPosition = new IntVector2(i, j);
                         }
                         currentRow--;
                     }
@@ -125,7 +134,8 @@ public class GameBoard : DrawableGameComponent
         {
             foreach (var piece in matchSet)
             {
-                GamePieces[piece.Location.X, piece.Location.Y] = null;
+                Game.Components.Remove(piece);
+                GamePieces[piece.GridPosition.X, piece.GridPosition.Y] = null;
             }
         }
     }
@@ -254,17 +264,17 @@ public class GameBoard : DrawableGameComponent
             pendingDeletion.AddRange(vSet);
         }
 
-        foreach (var piece in GamePieces)
-        {
-            piece.Highlighted = false;
-        }        
-        foreach (var set in allMatchSets)
-        {
-            foreach (var piece in set)
-            {
-                piece.Highlighted = true;
-            }
-        }
+        // foreach (var piece in GamePieces)
+        // {
+        //     piece.Highlighted = false;
+        // }        
+        // foreach (var set in allMatchSets)
+        // {
+        //     foreach (var piece in set)
+        //     {
+        //         piece.Highlighted = true;
+        //     }
+        // }
         return allMatchSets;
     }
 
@@ -286,25 +296,64 @@ public class GameBoard : DrawableGameComponent
 
     public void HandleTouchEvent(TouchEventArgs args)
     {
+        if (_gameBoardState != GameBoardState.AwaitingInput)
+        {
+            return;
+        }
         var startPiece = GetPieceAtPosition(args.TouchDown);
         var endPiece = GetPieceAtPosition(args.TouchUp);
-        if (startPiece is not null && endPiece is not null)
+        if (startPiece is not null && endPiece is not null && startPiece == endPiece)
         {
-            if (_selectedPiece is not null)
+            if (endPiece.Selected)
             {
-                if(endPiece != _selectedPiece)
-                {
-                    SwapPieces(_selectedPiece, endPiece);
-                }
-
+                endPiece.Selected = false;
                 _selectedPiece = null;
-
+                return;
             }
-            else
+            
+            if (_selectedPiece is not null && _selectedPiece != endPiece)
+            {
+
+                // var swap = new SwapEventArgs(_selectedPiece, endPiece);
+                
+                SwapPieces(_selectedPiece, endPiece);
+                _selectedPiece.Selected = false;
+                endPiece.Selected = false;
+                _selectedPiece = null;
+                
+                _gameBoardState = GameBoardState.PiecesMoving;
+                return;
+            }
+
+            if (_selectedPiece is null)
             {
                 _selectedPiece = endPiece;
+                endPiece.Selected = true;
+                return;
+            }
+
+            return;
+        }
+    }
+
+    public override void Update(GameTime gameTime)
+    {
+        var moving = false;
+        foreach (var piece in GamePieces)
+        {
+            if (piece.MoveState == MoveState.Moving)
+            {
+                moving = true;
+                break;
             }
         }
+
+        if (moving)
+        {
+            _gameBoardState = GameBoardState.PiecesMoving;
+            return;
+        }
+        _gameBoardState = GameBoardState.AwaitingInput;
     }
 
     public override void Draw(GameTime gameTime)
@@ -313,58 +362,38 @@ public class GameBoard : DrawableGameComponent
 
         var xPos = 0;
         var yPos = 0;
+
+
+
         
-        var pixel = new Texture2D(GraphicsDevice, 1, 1, false, SurfaceFormat.Color); 
-        pixel.SetData(new[] { Color.White });
-        var borderWidth = 3;
-        var borderColor = Color.White;
-        
-        for (int i = 0; i < Columns; i++)
-        {
-            for (int j = 0; j < Rows; j++)
-            {
-                var destinationRect = new Rectangle(xPos, yPos, TileSize.X, TileSize.Y);
-                var tex = Game.Content.Load<Texture2D>("Graphics/" + GamePieces[i, j].FileName);
-                var tempColor = Color.White;
-                if (_selectedPiece == GamePieces[i, j])
-                {
-                    // tempColor = Color.Gray;
-                    destinationRect = new Rectangle(xPos - Spacing, yPos - Spacing, TileSize.X + Spacing * 2,
-                        TileSize.Y + Spacing * 2);
-                }
-                spriteBatch.Draw(tex, destinationRect, tempColor);
-
-                if (GamePieces[i, j].Highlighted)
-                {
-                    spriteBatch.Draw(pixel, new Rectangle(destinationRect.X, destinationRect.Y, destinationRect.Width, borderWidth), borderColor); 
-
-                    spriteBatch.Draw(pixel, new Rectangle(destinationRect.X, destinationRect.Y, borderWidth, destinationRect.Height), borderColor); 
-
-                    spriteBatch.Draw(pixel, new Rectangle((destinationRect.X + destinationRect.Width - borderWidth), 
-                        destinationRect.Y, 
-                        borderWidth, 
-                        destinationRect.Height), borderColor);
-    
-                    spriteBatch.Draw(pixel, new Rectangle(destinationRect.X, 
-                        destinationRect.Y + destinationRect.Height - borderWidth, 
-                        destinationRect.Width, 
-                        borderWidth), borderColor); 
-                }
-
-                
-                
-                if (j < Rows - 1)
-                {
-                    yPos += TileSize.Y + Spacing;
-                }
-                else
-                {
-                    yPos = 0;
-                }
-            }
-
-            xPos += TileSize.X + Spacing;
-        }
+        // for (int i = 0; i < Columns; i++)
+        // {
+        //     for (int j = 0; j < Rows; j++)
+        //     {
+        //         var destinationRect = new Rectangle(xPos, yPos, TileSize.X, TileSize.Y);
+        //         var tex = Game.Content.Load<Texture2D>("Graphics/" + GamePieces[i, j].FileName);
+        //         var tempColor = Color.White;
+        //         if (_selectedPiece == GamePieces[i, j])
+        //         {
+        //             // tempColor = Color.Gray;
+        //             GamePieces[i, j].Highlighted = true;
+        //             destinationRect = new Rectangle(xPos - Spacing, yPos - Spacing, TileSize.X + Spacing * 2,
+        //                 TileSize.Y + Spacing * 2);
+        //         }
+        //         spriteBatch.Draw(tex, destinationRect, tempColor);
+        //
+        //         if (j < Rows - 1)
+        //         {
+        //             yPos += TileSize.Y + Spacing;
+        //         }
+        //         else
+        //         {
+        //             yPos = 0;
+        //         }
+        //     }
+        //
+        //     xPos += TileSize.X + Spacing;
+        // }
         
         base.Draw(gameTime);
     }
@@ -374,6 +403,15 @@ public class GameBoard : DrawableGameComponent
 public enum GameBoardState
 {
     AwaitingInput,
-    PieceSelected,
     PiecesMoving
+}
+
+public delegate void SwapEventHandler(SwapEventArgs args);
+
+public class SwapEventArgs(GamePiece selectedPiece, GamePiece endPiece) : EventArgs
+{
+    public GamePiece FirstPiece;
+    public GamePiece SecondPiece;
+  
+
 }

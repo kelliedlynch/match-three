@@ -6,15 +6,11 @@ namespace MatchThree;
 
 // public delegate void TouchEvent(TouchEventArgs args);
 
-public class InputManager: GameComponent
+public class InputManager(Game game) : GameComponent(game)
 {
     public bool LeftMousePressed = false;
     public Point? MouseDownAt = null;
     public event TouchEventHandler TouchEventCompleted;
-    
-    public InputManager(Game game) : base(game)
-    {
-    }
 
     protected void OnTouchEventCompleted(TouchEventArgs args)
     {

@@ -7,7 +7,13 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="3a042d36-8956-41ec-8878-fc782c9ef5f7" name="Changes" comment="" />
+    <list default="true" id="3a042d36-8956-41ec-8878-fc782c9ef5f7" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/GamePieceFactory.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/.idea.MatchThree/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.MatchThree/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/GameBoard.cs" beforeDir="false" afterPath="$PROJECT_DIR$/GameBoard.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/GamePiece.cs" beforeDir="false" afterPath="$PROJECT_DIR$/GamePiece.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/InputManager.cs" beforeDir="false" afterPath="$PROJECT_DIR$/InputManager.cs" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -19,26 +25,26 @@
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
-  <component name="GitHubPullRequestSearchHistory"><![CDATA[{
-  "lastFilter": {
-    "state": "OPEN",
-    "assignee": "kelliedlynch"
+  <component name="GitHubPullRequestSearchHistory">{
+  &quot;lastFilter&quot;: {
+    &quot;state&quot;: &quot;OPEN&quot;,
+    &quot;assignee&quot;: &quot;kelliedlynch&quot;
   }
-}]]></component>
-  <component name="GithubPullRequestsUISettings"><![CDATA[{
-  "selectedUrlAndAccountId": {
-    "url": "https://github.com/kelliedlynch/match-three.git",
-    "accountId": "90f27c2e-e54e-43ea-9319-6b916295acb2"
+}</component>
+  <component name="GithubPullRequestsUISettings">{
+  &quot;selectedUrlAndAccountId&quot;: {
+    &quot;url&quot;: &quot;https://github.com/kelliedlynch/match-three.git&quot;,
+    &quot;accountId&quot;: &quot;90f27c2e-e54e-43ea-9319-6b916295acb2&quot;
   }
-}]]></component>
+}</component>
   <component name="HighlightingSettingsPerFile">
     <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/DecompilerCache/decompiler/2dd5af81ce514a7dae965c311c11ef03f81000/57/195c6ecc/Thread.cs" root0="FORCE_HIGHLIGHTING" />
   </component>
   <component name="MetaFilesCheckinStateConfiguration" checkMetaFiles="true" />
-  <component name="ProjectColorInfo"><![CDATA[{
-  "customColor": "",
-  "associatedIndex": 0
-}]]></component>
+  <component name="ProjectColorInfo">{
+  &quot;customColor&quot;: &quot;&quot;,
+  &quot;associatedIndex&quot;: 0
+}</component>
   <component name="ProjectId" id="2oGeZu7VUZJcoV8BsNCgrbb8ADZ" />
   <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
   <component name="ProjectViewState">
@@ -87,7 +93,8 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1730500400116</updated>
-      <workItem from="1730500401421" duration="15975000" />
+      <workItem from="1730500401421" duration="21454000" />
+      <workItem from="1730654088726" duration="25157000" />
     </task>
     <task id="LOCAL-00001" summary="Match-3 skeleton in place: generating grid, swapping pieces, and checking for matches">
       <option name="closed" value="true" />
@@ -97,7 +104,15 @@
       <option name="project" value="LOCAL" />
       <updated>1730512296453</updated>
     </task>
-    <option name="localTasksCounter" value="2" />
+    <task id="LOCAL-00002" summary="Matches and match cascades now functioning">
+      <option name="closed" value="true" />
+      <created>1730581254248</created>
+      <option name="number" value="00002" />
+      <option name="presentableId" value="LOCAL-00002" />
+      <option name="project" value="LOCAL" />
+      <updated>1730581254248</updated>
+    </task>
+    <option name="localTasksCounter" value="3" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -119,6 +134,7 @@
   <component name="VcsManagerConfiguration">
     <option name="CLEAR_INITIAL_COMMIT_MESSAGE" value="true" />
     <MESSAGE value="Match-3 skeleton in place: generating grid, swapping pieces, and checking for matches" />
-    <option name="LAST_COMMIT_MESSAGE" value="Match-3 skeleton in place: generating grid, swapping pieces, and checking for matches" />
+    <MESSAGE value="Matches and match cascades now functioning" />
+    <option name="LAST_COMMIT_MESSAGE" value="Matches and match cascades now functioning" />
   </component>
 </project>
