@@ -19,18 +19,24 @@ public class GameBoard : DrawableGameComponent
     public int Spacing = 10;
     private GamePiece _selectedPiece;
     private GameBoardState _gameBoardState = GameBoardState.AwaitingInput;
+    private Vector2 _offscreenOffset = new (0, -100);
+    private Bag<GamePiece> _movingPieces = new();
+
+    private event Action CascadeMatches;
+    
     
     public GameBoard(Game game) : base(game)
     {
         // var batch = new SpriteBatch(GraphicsDevice);
         // Game.Services.AddService(typeof(SpriteBatch), batch);
+        CascadeMatches += OnCascadeMatches;
         GamePieces = new GamePiece[Columns, Rows];
         GridRects = new Rectangle[Columns, Rows];
         var man = game.Services.GetService<InputManager>();
         man.TouchEventCompleted += HandleTouchEvent;
         GenerateGrid();
         FillBoard();
-        CascadeMatches();
+        CascadeMatches?.Invoke();
     }
 
     public void GenerateGrid()
@@ -73,22 +79,38 @@ public class GameBoard : DrawableGameComponent
     public void SwapPieces(GamePiece piece1, GamePiece piece2)
     {
         (piece1.GridPosition, piece2.GridPosition) = (piece2.GridPosition, piece1.GridPosition);
-        piece1.MoveTo(piece2.Bounds.Location);
-        piece2.MoveTo(piece1.Bounds.Location);
         GamePieces[piece1.GridPosition.X, piece1.GridPosition.Y] = piece1;
         GamePieces[piece2.GridPosition.X, piece2.GridPosition.Y] = piece2;
-        CascadeMatches();
+        MovePieceTo(piece1, GridRects[piece1.GridPosition.X, piece1.GridPosition.Y].Location);
+        MovePieceTo(piece2, GridRects[piece2.GridPosition.X, piece2.GridPosition.Y].Location);
+        // piece1.MoveTo(piece2.Bounds.Location);
+        // piece2.MoveTo(piece1.Bounds.Location);
+
+        // CascadeMatches?.Invoke();
     }
 
-    public void CascadeMatches()
+    public void OnCascadeMatches()
     {
         var allMatches = CheckForMatches();
-        while (allMatches.Count > 0)
+        if (allMatches.IsEmpty)
         {
-            RemoveMatches(allMatches);
-            FillSpaces();
-            allMatches = CheckForMatches();
+            _gameBoardState = GameBoardState.AwaitingInput;
+            return;
         }
+        _gameBoardState = GameBoardState.PiecesMoving;
+        RemoveMatches(allMatches);
+        FillSpaces();
+        
+    }
+
+    public void OnMoveCompleted(GamePiece piece)
+    {
+        _movingPieces.Remove(piece);
+        if (_movingPieces.IsEmpty)
+        {
+            CascadeMatches?.Invoke();
+        }
+        
     }
 
     public void FillSpaces()
@@ -106,9 +128,12 @@ public class GameBoard : DrawableGameComponent
                         if (currentRow == 0)
                         {
                             replacementPiece = GamePieceFactory.GenerateRandom(Game, new IntVector2(i, currentRow));
+                            replacementPiece.Bounds = GridRects[i, j];
+                            replacementPiece.ScreenPosition += _offscreenOffset;
+                            
                             // replacementPiece.Position = GridRects[i, j].Location.ToVector2();
                             // replacementPiece.TargetPosition = replacementPiece.Position;
-                            replacementPiece.Bounds = GridRects[i, j];
+                            
                             Game.Components.Add(replacementPiece);
                         }
                         else
@@ -126,6 +151,24 @@ public class GameBoard : DrawableGameComponent
                 }
             }
         }
+
+        foreach (var piece in GamePieces)
+        {
+            var loc = GridRects[piece.GridPosition.X, piece.GridPosition.Y].Location;
+            if (piece.ScreenPosition == loc.ToVector2())
+            {
+                continue;
+            }
+            MovePieceTo(piece, loc);
+        }
+    }
+
+    private void MovePieceTo(GamePiece piece, Point screenPosition)
+    {
+        piece.MoveTo(screenPosition);
+        _movingPieces.Add(piece);
+        piece.MoveCompleted += OnMoveCompleted;
+        _gameBoardState = GameBoardState.PiecesMoving;
     }
 
     public void RemoveMatches(Bag<Bag<GamePiece>> matches)

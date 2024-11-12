@@ -3,6 +3,7 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using MonoGame.Extended;
 using MonoGame.Extended.Particles;
+using MonoGame.Extended.Tweening;
 using Roguelike.Utility;
 
 namespace MatchThree;
@@ -15,16 +16,19 @@ public class GamePiece(Game game) : DrawableGameComponent(game)
     public bool Selected = false;
 
     public IntVector2 GridPosition;
-    private Vector2 _screenPosition;
+    public Vector2 ScreenPosition;
     private Vector2 _size;
     public Point TargetPosition;
+    
+    private readonly Tweener Tweener = new Tweener();
+    public event Action<GamePiece> MoveCompleted;
 
     public Rectangle Bounds
     {
-        get => new Rectangle(_screenPosition.ToPoint(), _size.ToPoint());
+        get => new Rectangle(ScreenPosition.ToPoint(), _size.ToPoint());
         set
         {
-            _screenPosition = value.Location.ToVector2();
+            ScreenPosition = value.Location.ToVector2();
             _size = value.Size.ToVector2();
         }
     }
@@ -57,27 +61,28 @@ public class GamePiece(Game game) : DrawableGameComponent(game)
         {
             return;
         }
-
-        if (Velocity == Vector2.Zero)
+        Tweener.Update(gameTime.GetElapsedSeconds());
+        if (ScreenPosition == TargetPosition.ToVector2())
         {
-            Velocity = (TargetPosition.ToVector2() - _screenPosition) * Speed;
-        }
-        var distanceToTarget = TargetPosition.ToVector2() - _screenPosition;
-        if (Math.Abs(distanceToTarget.X) <= Math.Abs(Velocity.X * (float)gameTime.ElapsedGameTime.TotalSeconds) && Math.Abs(distanceToTarget.Y) <= Math.Abs(Velocity.Y * (float)gameTime.ElapsedGameTime.TotalSeconds))
-        {
-            _screenPosition = TargetPosition.ToVector2();
-            Velocity = Vector2.Zero;
             MoveState = MoveState.NotMoving;
-            return;
+            MoveCompleted?.Invoke(this);
+            // Tweener.CancelAndCompleteAll();
+            // TargetPosition = Point.Zero;
         }
-
-        // distanceToTarget.Normalize();
-        _screenPosition += Velocity * (float)gameTime.ElapsedGameTime.TotalSeconds;
+        
     }
 
     public void MoveTo(Point position)
     {
         TargetPosition = position;
+        Tweener.TweenTo(this, x => x.ScreenPosition, position.ToVector2(), Speed)
+            .Easing(EasingFunctions.Linear);
+        // Tweener.TweenTo(
+        //     target: this,
+        //     expression: x => x._screenPosition,
+        //     toValue: position,
+        //     duration: Speed,
+        //     delay: 0);
         MoveState = MoveState.Moving;
     }
 
@@ -101,7 +106,7 @@ public class GamePiece(Game game) : DrawableGameComponent(game)
         pixel.SetData(new[] { Color.White });
         var borderWidth = 3;
         var borderColor = Color.White;
-        var pos = _screenPosition.ToIntVector2();
+        var pos = ScreenPosition.ToIntVector2();
         var size = _size.ToIntVector2();
         spriteBatch.Draw(pixel, new Rectangle(pos.X, pos.Y, size.X, borderWidth), borderColor);
 

@@ -7,12 +7,10 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="3a042d36-8956-41ec-8878-fc782c9ef5f7" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/GamePieceFactory.cs" afterDir="false" />
+    <list default="true" id="3a042d36-8956-41ec-8878-fc782c9ef5f7" name="Changes" comment="Working bugs out of gamepiece movement and replacement">
       <change beforePath="$PROJECT_DIR$/.idea/.idea.MatchThree/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.MatchThree/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/GameBoard.cs" beforeDir="false" afterPath="$PROJECT_DIR$/GameBoard.cs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/GamePiece.cs" beforeDir="false" afterPath="$PROJECT_DIR$/GamePiece.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/InputManager.cs" beforeDir="false" afterPath="$PROJECT_DIR$/InputManager.cs" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -94,7 +92,7 @@
       <option name="presentableId" value="Default" />
       <updated>1730500400116</updated>
       <workItem from="1730500401421" duration="21454000" />
-      <workItem from="1730654088726" duration="25157000" />
+      <workItem from="1730654088726" duration="35475000" />
     </task>
     <task id="LOCAL-00001" summary="Match-3 skeleton in place: generating grid, swapping pieces, and checking for matches">
       <option name="closed" value="true" />
@@ -112,7 +110,15 @@
       <option name="project" value="LOCAL" />
       <updated>1730581254248</updated>
     </task>
-    <option name="localTasksCounter" value="3" />
+    <task id="LOCAL-00003" summary="Working bugs out of gamepiece movement and replacement">
+      <option name="closed" value="true" />
+      <created>1731347594459</created>
+      <option name="number" value="00003" />
+      <option name="presentableId" value="LOCAL-00003" />
+      <option name="project" value="LOCAL" />
+      <updated>1731347594459</updated>
+    </task>
+    <option name="localTasksCounter" value="4" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -135,6 +141,26 @@
     <option name="CLEAR_INITIAL_COMMIT_MESSAGE" value="true" />
     <MESSAGE value="Match-3 skeleton in place: generating grid, swapping pieces, and checking for matches" />
     <MESSAGE value="Matches and match cascades now functioning" />
-    <option name="LAST_COMMIT_MESSAGE" value="Matches and match cascades now functioning" />
+    <MESSAGE value="Working bugs out of gamepiece movement and replacement" />
+    <option name="LAST_COMMIT_MESSAGE" value="Working bugs out of gamepiece movement and replacement" />
+  </component>
+  <component name="XDebuggerManager">
+    <breakpoint-manager>
+      <breakpoints>
+        <line-breakpoint enabled="true" type="DotNet Breakpoints">
+          <url>file://$PROJECT_DIR$/GameBoard.cs</url>
+          <line>161</line>
+          <properties documentPath="$PROJECT_DIR$/GameBoard.cs" containingFunctionPresentation="Method 'FillSpaces'">
+            <startOffsets>
+              <option value="5395" />
+            </startOffsets>
+            <endOffsets>
+              <option value="5419" />
+            </endOffsets>
+          </properties>
+          <option name="timeStamp" value="15" />
+        </line-breakpoint>
+      </breakpoints>
+    </breakpoint-manager>
   </component>
 </project>
