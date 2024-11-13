@@ -15,11 +15,11 @@ public class GameBoard : DrawableGameComponent
     public int Columns = 6;
     public GamePiece[,] GamePieces;
     public Rectangle[,] GridRects;
-    public IntVector2 TileSize = new IntVector2(64, 64);
+    private static readonly IntVector2 TileSize = new (64, 64);
     public int Spacing = 10;
     private GamePiece _selectedPiece;
     private GameBoardState _gameBoardState = GameBoardState.AwaitingInput;
-    private Vector2 _offscreenOffset = new (0, -100);
+    private Vector2 _offscreenOffset = new (0, -TileSize.Y);
     private Bag<GamePiece> _movingPieces = new();
 
     private event Action CascadeMatches;
@@ -42,7 +42,7 @@ public class GameBoard : DrawableGameComponent
     public void GenerateGrid()
     {
         var xPos = 0;
-        var yPos = 0;
+        var yPos = 10;
         for (int i = 0; i < Columns; i++)
         {
             for (int j = 0; j < Rows; j++)
@@ -54,7 +54,7 @@ public class GameBoard : DrawableGameComponent
                 }
                 else
                 {
-                    yPos = 0;
+                    yPos = 10;
                 }
             }
 
@@ -117,22 +117,27 @@ public class GameBoard : DrawableGameComponent
     {
         for (int i = Columns - 1; i >=0; i--)
         {
+            
+            
+            var piecesAdded = 0;
             for (int j = Rows - 1; j >= 0; j--)
             {
                 if (GamePieces[i, j] == null)
                 {
                     var currentRow = j;
                     GamePiece replacementPiece = null;
+                    
                     while (GamePieces[i, j] == null && currentRow >= 0)
                     {
                         if (currentRow == 0)
                         {
+                            var padding = new IntVector2(0, Spacing * (piecesAdded));
+                            var insertPosition = new IntVector2(GridRects[i, j].X, GridRects[i, currentRow].Y - TileSize.Y - Spacing);
+                            insertPosition -= padding + new IntVector2(0, TileSize.Y * piecesAdded);
+                            piecesAdded++;
                             replacementPiece = GamePieceFactory.GenerateRandom(Game, new IntVector2(i, currentRow));
-                            replacementPiece.Bounds = GridRects[i, j];
-                            replacementPiece.ScreenPosition += _offscreenOffset;
-                            
-                            // replacementPiece.Position = GridRects[i, j].Location.ToVector2();
-                            // replacementPiece.TargetPosition = replacementPiece.Position;
+                            replacementPiece.Bounds = GridRects[i, currentRow];
+                            replacementPiece.ScreenPosition = insertPosition;
                             
                             Game.Components.Add(replacementPiece);
                         }
@@ -145,6 +150,7 @@ public class GameBoard : DrawableGameComponent
                         if (GamePieces[i, j] is not null)
                         {
                             GamePieces[i, j].GridPosition = new IntVector2(i, j);
+                            // piecesDropped++;
                         }
                         currentRow--;
                     }
@@ -159,13 +165,21 @@ public class GameBoard : DrawableGameComponent
             {
                 continue;
             }
-            MovePieceTo(piece, loc);
+            DropPieceTo(piece, loc);
         }
     }
 
     private void MovePieceTo(GamePiece piece, Point screenPosition)
     {
         piece.MoveTo(screenPosition);
+        _movingPieces.Add(piece);
+        piece.MoveCompleted += OnMoveCompleted;
+        _gameBoardState = GameBoardState.PiecesMoving;
+    }
+    
+    private void DropPieceTo(GamePiece piece, Point screenPosition)
+    {
+        piece.FallTo(screenPosition);
         _movingPieces.Add(piece);
         piece.MoveCompleted += OnMoveCompleted;
         _gameBoardState = GameBoardState.PiecesMoving;

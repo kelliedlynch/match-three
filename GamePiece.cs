@@ -34,7 +34,7 @@ public class GamePiece(Game game) : DrawableGameComponent(game)
     }
 
     public Vector2 Velocity = Vector2.Zero;
-    public float Speed = 0.9f;
+    public float Speed = 0.4f;
     public MoveState MoveState = MoveState.NotMoving;
     
 
@@ -66,6 +66,7 @@ public class GamePiece(Game game) : DrawableGameComponent(game)
         {
             MoveState = MoveState.NotMoving;
             MoveCompleted?.Invoke(this);
+            
             // Tweener.CancelAndCompleteAll();
             // TargetPosition = Point.Zero;
         }
@@ -76,13 +77,16 @@ public class GamePiece(Game game) : DrawableGameComponent(game)
     {
         TargetPosition = position;
         Tweener.TweenTo(this, x => x.ScreenPosition, position.ToVector2(), Speed)
-            .Easing(EasingFunctions.Linear);
-        // Tweener.TweenTo(
-        //     target: this,
-        //     expression: x => x._screenPosition,
-        //     toValue: position,
-        //     duration: Speed,
-        //     delay: 0);
+            .Easing(EasingFunctions.CubicInOut);
+        MoveState = MoveState.Moving;
+    }
+
+    public void FallTo(Point position)
+    {
+        TargetPosition = position;
+        var delay = new Random().NextDouble() * 0.1;
+        Tweener.TweenTo(this, x => x.ScreenPosition, position.ToVector2(), Speed, (float)delay)
+            .Easing(EasingFunctions.ElasticInOut);
         MoveState = MoveState.Moving;
     }
 
