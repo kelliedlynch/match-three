@@ -44,13 +44,38 @@ public class GamePiece(Game game) : DrawableGameComponent(game)
         {
             return PieceType switch
             {
-                PieceType.Diamond => "tileBlue_04",
-                PieceType.Circle => "tilePink_11",
-                PieceType.Square => "tileRed_01",
-                PieceType.Pentagon => "tileGreen_05",
-                PieceType.Star => "tileOrange_08",
-                PieceType.Jewel => "tileYellow_22",
+                // PieceType.Diamond => "tileBlue_04",
+                // PieceType.Circle => "tilePink_11",
+                // PieceType.Square => "tileRed_01",
+                // PieceType.Pentagon => "tileGreen_05",
+                // PieceType.Star => "tileOrange_08",
+                // PieceType.Jewel => "tileYellow_22",
+                PieceType.Diamond => "rune_blue_x",
+                PieceType.Circle => "rune_turq_x",
+                PieceType.Square => "rune_purple_x",
+                PieceType.Pentagon => "rune_orange_x",
+                PieceType.Star => "rune_yellow_x",
+                PieceType.Jewel => "rune_green_x",
                 _ => ""
+            };
+        }
+    }
+    
+    
+
+    public Color Color
+    {
+        get
+        {
+            return PieceType switch
+            {
+                PieceType.Diamond => Color.Red,
+                PieceType.Circle => Color.DeepSkyBlue,
+                PieceType.Square => Color.Purple,
+                PieceType.Pentagon => Color.Yellow,
+                PieceType.Star => Color.Orange,
+                PieceType.Jewel => Color.LawnGreen,
+                _ => Color.White
             };
         }
     }
@@ -86,7 +111,7 @@ public class GamePiece(Game game) : DrawableGameComponent(game)
         TargetPosition = position;
         var delay = new Random().NextDouble() * 0.1;
         Tweener.TweenTo(this, x => x.ScreenPosition, position.ToVector2(), Speed, (float)delay)
-            .Easing(EasingFunctions.ElasticInOut);
+            .Easing(EasingFunctions.BounceOut);
         MoveState = MoveState.Moving;
     }
 

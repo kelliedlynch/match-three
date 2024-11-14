@@ -13,25 +13,26 @@ public class GameBoard : DrawableGameComponent
 {
     public int Rows = 6;
     public int Columns = 6;
-    public GamePiece[,] GamePieces;
-    public Rectangle[,] GridRects;
-    private static readonly IntVector2 TileSize = new (64, 64);
+    
     public int Spacing = 10;
     private GamePiece _selectedPiece;
-    private GameBoardState _gameBoardState = GameBoardState.AwaitingInput;
-    private Vector2 _offscreenOffset = new (0, -TileSize.Y);
+    // private GameBoardState _gameBoardState = GameBoardState.AwaitingInput;
     private Bag<GamePiece> _movingPieces = new();
+    public GamePiece[,] GamePieces;
+    public Rectangle[,] GridRects;
+    public Rectangle[] InsertPositions;
+    public Rectangle Bounds;
+    public IntVector2 TileSize;
 
     private event Action CascadeMatches;
     
     
-    public GameBoard(Game game) : base(game)
+    public GameBoard(Game game, Rectangle rect) : base(game)
     {
-        // var batch = new SpriteBatch(GraphicsDevice);
-        // Game.Services.AddService(typeof(SpriteBatch), batch);
+        Bounds = rect;
+        
         CascadeMatches += OnCascadeMatches;
         GamePieces = new GamePiece[Columns, Rows];
-        GridRects = new Rectangle[Columns, Rows];
         var man = game.Services.GetService<InputManager>();
         man.TouchEventCompleted += HandleTouchEvent;
         GenerateGrid();
@@ -41,10 +42,16 @@ public class GameBoard : DrawableGameComponent
 
     public void GenerateGrid()
     {
-        var xPos = 0;
-        var yPos = 10;
+        var tileX = (Bounds.Width / Columns) - Spacing * (Columns - 1);
+        var tileY = (Bounds.Height / Rows) - Spacing * (Rows - 1);
+        TileSize = new (tileX, tileY);
+        GridRects = new Rectangle[Columns, Rows];
+        InsertPositions = new Rectangle[Columns];
+        var xPos = Bounds.X;
+        var yPos = Bounds.Y;
         for (int i = 0; i < Columns; i++)
         {
+            InsertPositions[i] = new Rectangle(xPos, yPos - Spacing - TileSize.Y, TileSize.X, TileSize.Y);
             for (int j = 0; j < Rows; j++)
             {
                 GridRects[i, j] = new Rectangle(xPos, yPos, TileSize.X, TileSize.Y);
@@ -54,7 +61,7 @@ public class GameBoard : DrawableGameComponent
                 }
                 else
                 {
-                    yPos = 10;
+                    yPos = Bounds.Y;
                 }
             }
 
@@ -94,72 +101,44 @@ public class GameBoard : DrawableGameComponent
         var allMatches = CheckForMatches();
         if (allMatches.IsEmpty)
         {
-            _gameBoardState = GameBoardState.AwaitingInput;
+            // _gameBoardState = GameBoardState.AwaitingInput;
             return;
         }
-        _gameBoardState = GameBoardState.PiecesMoving;
+        // _gameBoardState = GameBoardState.PiecesMoving;
         RemoveMatches(allMatches);
-        FillSpaces();
+        ApplyGravity();
         
     }
 
     public void OnMoveCompleted(GamePiece piece)
     {
         _movingPieces.Remove(piece);
-        if (_movingPieces.IsEmpty)
+        if (!_movingPieces.IsEmpty)
         {
-            CascadeMatches?.Invoke();
+            return;
+        }
+
+        if(EmptySpacesExist())
+        {
+            // _gameBoardState = GameBoardState.PiecesMoving;
+            ApplyGravity();
+            return;
         }
         
+        
+        CascadeMatches?.Invoke();
     }
 
-    public void FillSpaces()
+    public void ApplyGravity(bool recursive = false)
     {
-        for (int i = Columns - 1; i >=0; i--)
+        while (EmptySpacesExist())
         {
-            
-            
-            var piecesAdded = 0;
-            for (int j = Rows - 1; j >= 0; j--)
-            {
-                if (GamePieces[i, j] == null)
-                {
-                    var currentRow = j;
-                    GamePiece replacementPiece = null;
-                    
-                    while (GamePieces[i, j] == null && currentRow >= 0)
-                    {
-                        if (currentRow == 0)
-                        {
-                            var padding = new IntVector2(0, Spacing * (piecesAdded));
-                            var insertPosition = new IntVector2(GridRects[i, j].X, GridRects[i, currentRow].Y - TileSize.Y - Spacing);
-                            insertPosition -= padding + new IntVector2(0, TileSize.Y * piecesAdded);
-                            piecesAdded++;
-                            replacementPiece = GamePieceFactory.GenerateRandom(Game, new IntVector2(i, currentRow));
-                            replacementPiece.Bounds = GridRects[i, currentRow];
-                            replacementPiece.ScreenPosition = insertPosition;
-                            
-                            Game.Components.Add(replacementPiece);
-                        }
-                        else
-                        {
-                            replacementPiece = GamePieces[i, currentRow - 1];
-                            GamePieces[i, currentRow - 1] = null;
-                        }
-                        GamePieces[i, j] = replacementPiece;
-                        if (GamePieces[i, j] is not null)
-                        {
-                            GamePieces[i, j].GridPosition = new IntVector2(i, j);
-                            // piecesDropped++;
-                        }
-                        currentRow--;
-                    }
-                }
-            }
-        }
+            ShiftDown();
+        }        
 
         foreach (var piece in GamePieces)
         {
+            if(piece == null) continue;
             var loc = GridRects[piece.GridPosition.X, piece.GridPosition.Y].Location;
             if (piece.ScreenPosition == loc.ToVector2())
             {
@@ -169,12 +148,61 @@ public class GameBoard : DrawableGameComponent
         }
     }
 
+    public bool EmptySpacesExist()
+    {
+        foreach (var piece in GamePieces)
+        {
+            if (piece == null) return true;
+        }
+
+        return false;
+    }
+
+    public void ShiftDown()
+    {
+        for (int i = Columns - 1; i >=0; i--)
+        {
+            var piecesInserted = 0;
+            for (int j = Rows - 1; j >= 0; j--)
+            {
+                if (GamePieces[i, j] == null)
+                {
+                    if (j == 0)
+                    {
+                        var yOffset = TileSize.Y * piecesInserted + Spacing * piecesInserted;
+                        SpawnNewPiece(i);
+                        GamePieces[i, j].ScreenPosition += new IntVector2(0, -yOffset);
+                        piecesInserted++;
+                        continue;
+                    }
+
+                    var upOne = GamePieces[i, j - 1];
+                    if ( upOne == null)
+                    {
+                        continue;
+                    }
+                    upOne.GridPosition.Y = j;
+                    GamePieces[i, j] = upOne;
+                    GamePieces[i, j - 1] = null;
+                }
+            }
+        }
+    }
+
+    private void SpawnNewPiece(int column)
+    {
+        var newPiece = GamePieceFactory.GenerateRandom(Game, new IntVector2(column, 0));
+        newPiece.Bounds = InsertPositions[column];
+        GamePieces[column, 0] = newPiece;
+        Game.Components.Add(newPiece);
+    }
+    
     private void MovePieceTo(GamePiece piece, Point screenPosition)
     {
         piece.MoveTo(screenPosition);
         _movingPieces.Add(piece);
         piece.MoveCompleted += OnMoveCompleted;
-        _gameBoardState = GameBoardState.PiecesMoving;
+        // _gameBoardState = GameBoardState.PiecesMoving;
     }
     
     private void DropPieceTo(GamePiece piece, Point screenPosition)
@@ -182,7 +210,7 @@ public class GameBoard : DrawableGameComponent
         piece.FallTo(screenPosition);
         _movingPieces.Add(piece);
         piece.MoveCompleted += OnMoveCompleted;
-        _gameBoardState = GameBoardState.PiecesMoving;
+        // _gameBoardState = GameBoardState.PiecesMoving;
     }
 
     public void RemoveMatches(Bag<Bag<GamePiece>> matches)
@@ -353,10 +381,10 @@ public class GameBoard : DrawableGameComponent
 
     public void HandleTouchEvent(TouchEventArgs args)
     {
-        if (_gameBoardState != GameBoardState.AwaitingInput)
-        {
-            return;
-        }
+        // if (_gameBoardState != GameBoardState.AwaitingInput)
+        // {
+        //     return;
+        // }
         var startPiece = GetPieceAtPosition(args.TouchDown);
         var endPiece = GetPieceAtPosition(args.TouchUp);
         if (startPiece is not null && endPiece is not null && startPiece == endPiece)
@@ -378,7 +406,7 @@ public class GameBoard : DrawableGameComponent
                 endPiece.Selected = false;
                 _selectedPiece = null;
                 
-                _gameBoardState = GameBoardState.PiecesMoving;
+                // _gameBoardState = GameBoardState.PiecesMoving;
                 return;
             }
 
@@ -395,22 +423,22 @@ public class GameBoard : DrawableGameComponent
 
     public override void Update(GameTime gameTime)
     {
-        var moving = false;
-        foreach (var piece in GamePieces)
-        {
-            if (piece.MoveState == MoveState.Moving)
-            {
-                moving = true;
-                break;
-            }
-        }
-
-        if (moving)
-        {
-            _gameBoardState = GameBoardState.PiecesMoving;
-            return;
-        }
-        _gameBoardState = GameBoardState.AwaitingInput;
+        // var moving = false;
+        // foreach (var piece in GamePieces)
+        // {
+        //     if (piece.MoveState == MoveState.Moving)
+        //     {
+        //         moving = true;
+        //         break;
+        //     }
+        // }
+        //
+        // if (moving)
+        // {
+        //     _gameBoardState = GameBoardState.PiecesMoving;
+        //     return;
+        // }
+        // _gameBoardState = GameBoardState.AwaitingInput;
     }
 
     public override void Draw(GameTime gameTime)

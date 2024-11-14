@@ -7,10 +7,12 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="3a042d36-8956-41ec-8878-fc782c9ef5f7" name="Changes" comment="Working bugs out of gamepiece movement and replacement">
+    <list default="true" id="3a042d36-8956-41ec-8878-fc782c9ef5f7" name="Changes" comment="Worked bugs out of falling animations. Core match mechanics now complete.">
       <change beforePath="$PROJECT_DIR$/.idea/.idea.MatchThree/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.MatchThree/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Content/Content.mgcb" beforeDir="false" afterPath="$PROJECT_DIR$/Content/Content.mgcb" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/GameBoard.cs" beforeDir="false" afterPath="$PROJECT_DIR$/GameBoard.cs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/GamePiece.cs" beforeDir="false" afterPath="$PROJECT_DIR$/GamePiece.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MainGame.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MainGame.cs" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -37,6 +39,8 @@
 }</component>
   <component name="HighlightingSettingsPerFile">
     <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/DecompilerCache/decompiler/2dd5af81ce514a7dae965c311c11ef03f81000/57/195c6ecc/Thread.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="mock:///Users/kellie/Library/Mobile Documents/com~apple~CloudDocs/Coding/monogame/MatchThree/GameBoard.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Users/kellie/Library/Mobile Documents/com~apple~CloudDocs/Coding/monogame/MatchThree/GamePiece.cs" root0="SKIP_HIGHLIGHTING" />
   </component>
   <component name="MetaFilesCheckinStateConfiguration" checkMetaFiles="true" />
   <component name="ProjectColorInfo">{
@@ -92,7 +96,7 @@
       <option name="presentableId" value="Default" />
       <updated>1730500400116</updated>
       <workItem from="1730500401421" duration="21454000" />
-      <workItem from="1730654088726" duration="35475000" />
+      <workItem from="1730654088726" duration="55109000" />
     </task>
     <task id="LOCAL-00001" summary="Match-3 skeleton in place: generating grid, swapping pieces, and checking for matches">
       <option name="closed" value="true" />
@@ -118,7 +122,23 @@
       <option name="project" value="LOCAL" />
       <updated>1731347594459</updated>
     </task>
-    <option name="localTasksCounter" value="4" />
+    <task id="LOCAL-00004" summary="Match cascading now working correctly. Added movement animations.">
+      <option name="closed" value="true" />
+      <created>1731450767884</created>
+      <option name="number" value="00004" />
+      <option name="presentableId" value="LOCAL-00004" />
+      <option name="project" value="LOCAL" />
+      <updated>1731450767884</updated>
+    </task>
+    <task id="LOCAL-00005" summary="Worked bugs out of falling animations. Core match mechanics now complete.">
+      <option name="closed" value="true" />
+      <created>1731473328146</created>
+      <option name="number" value="00005" />
+      <option name="presentableId" value="LOCAL-00005" />
+      <option name="project" value="LOCAL" />
+      <updated>1731473328146</updated>
+    </task>
+    <option name="localTasksCounter" value="6" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -142,25 +162,8 @@
     <MESSAGE value="Match-3 skeleton in place: generating grid, swapping pieces, and checking for matches" />
     <MESSAGE value="Matches and match cascades now functioning" />
     <MESSAGE value="Working bugs out of gamepiece movement and replacement" />
-    <option name="LAST_COMMIT_MESSAGE" value="Working bugs out of gamepiece movement and replacement" />
-  </component>
-  <component name="XDebuggerManager">
-    <breakpoint-manager>
-      <breakpoints>
-        <line-breakpoint enabled="true" type="DotNet Breakpoints">
-          <url>file://$PROJECT_DIR$/GameBoard.cs</url>
-          <line>161</line>
-          <properties documentPath="$PROJECT_DIR$/GameBoard.cs" containingFunctionPresentation="Method 'FillSpaces'">
-            <startOffsets>
-              <option value="5395" />
-            </startOffsets>
-            <endOffsets>
-              <option value="5419" />
-            </endOffsets>
-          </properties>
-          <option name="timeStamp" value="15" />
-        </line-breakpoint>
-      </breakpoints>
-    </breakpoint-manager>
+    <MESSAGE value="Match cascading now working correctly. Added movement animations." />
+    <MESSAGE value="Worked bugs out of falling animations. Core match mechanics now complete." />
+    <option name="LAST_COMMIT_MESSAGE" value="Worked bugs out of falling animations. Core match mechanics now complete." />
   </component>
 </project>

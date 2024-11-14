@@ -1,6 +1,7 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
+using Roguelike.Utility;
 
 namespace MatchThree;
 
@@ -8,10 +9,15 @@ public class MainGame : Game
 {
     private GraphicsDeviceManager _graphics;
     private SpriteBatch _spriteBatch;
+    public IntVector2 ScreenSize = new(600, 1080);
+    public int GameBoardPadding = 10;
+    public IntVector2 GameBoardSize = new(560, 560);
 
     public MainGame()
     {
         _graphics = new GraphicsDeviceManager(this);
+        _graphics.PreferredBackBufferWidth = ScreenSize.X;
+        _graphics.PreferredBackBufferHeight = ScreenSize.Y;
         Content.RootDirectory = "Content";
         IsMouseVisible = true;
     }
@@ -30,11 +36,14 @@ public class MainGame : Game
         _spriteBatch = new SpriteBatch(GraphicsDevice);
         Services.AddService(_spriteBatch);
 
-        var gameBoard = new GameBoard(this);
+        var xOffset = (ScreenSize.X - GameBoardSize.X) / 2;
+        var yOffset = ScreenSize.Y - GameBoardSize.Y - GameBoardPadding;
+        var boardRect = new Rectangle(xOffset, yOffset, GameBoardSize.X, GameBoardSize.Y);
+        var gameBoard = new GameBoard(this, boardRect);
         Components.Add(gameBoard);
 
-        // TODO: use this.Content to load your game content here
     }
+    
 
     protected override void Update(GameTime gameTime)
     {
