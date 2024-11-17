@@ -43,16 +43,8 @@ public class InputManager(Game game) : GameComponent(game)
 
 public delegate void TouchEventHandler(TouchEventArgs args);
 
-public class TouchEventArgs : EventArgs
+public class TouchEventArgs(Point touchDown, Point touchUp) : EventArgs
 {
-    public Point TouchDown;
-    public Point TouchUp;
-    
-    public TouchEventArgs(Point touchDown, Point touchUp)
-    {
-        TouchDown = touchDown;
-        TouchUp = touchUp;
-    }
-    
-
+    public Point TouchDown = touchDown;
+    public Point TouchUp = touchUp;
 }

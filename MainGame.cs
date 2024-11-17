@@ -1,6 +1,9 @@
-﻿using Microsoft.Xna.Framework;
+﻿using System.Collections.Generic;
+using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
+using MonoGame.Extended.Collections;
+using MonoGame.Extended.ECS;
 using Roguelike.Utility;
 
 namespace MatchThree;
@@ -28,6 +31,7 @@ public class MainGame : Game
         Components.Add(inputManager);
         Services.AddService(inputManager);
 
+
         base.Initialize();
     }
 
@@ -42,8 +46,37 @@ public class MainGame : Game
         var gameBoard = new GameBoard(this, boardRect);
         Components.Add(gameBoard);
 
+        var rect = new Rectangle(xOffset, GameBoardPadding, GameBoardSize.X, ScreenSize.Y - GameBoardSize.Y - GameBoardPadding * 3);
+        var battlefield = new Battlefield(this, rect);
+        Components.Add(battlefield);
+        
+        var battleManager = new BattleManager(this, gameBoard, battlefield);
+        Services.AddService(battleManager);
+
+        var monsters = new List<Monster>();
+
+        for (int i = 0; i < 1; i++)
+        {
+            var mon = new Monster(this);
+            mon.FileName = "Graphics/Slime RPG Basic";
+            mon.MaxHitPoints = 100;
+            mon.CurrentHitPoints = 100;
+            monsters.Add(mon);
+        }
+        
+        battleManager.InitializeBattle(monsters);
+        battleManager.BeginBattle();
+        // battlefield.AddMonster(mon);
+        // battlefield.AddMonster(mon);
+        // battlefield.AddMonster(mon);
+        // battlefield.AddMonster(mon);
+
     }
-    
+
+    protected override void BeginRun()
+    {
+
+    }
 
     protected override void Update(GameTime gameTime)
     {
@@ -58,7 +91,7 @@ public class MainGame : Game
 
     protected override bool BeginDraw()
     {
-        GraphicsDevice.Clear(Color.Black);
+        GraphicsDevice.Clear(Color.Gray);
         Services.GetService<SpriteBatch>().Begin();
         return base.BeginDraw();
     }

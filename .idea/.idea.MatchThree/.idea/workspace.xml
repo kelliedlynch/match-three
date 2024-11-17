@@ -7,11 +7,19 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="3a042d36-8956-41ec-8878-fc782c9ef5f7" name="Changes" comment="Worked bugs out of falling animations. Core match mechanics now complete.">
+    <list default="true" id="3a042d36-8956-41ec-8878-fc782c9ef5f7" name="Changes" comment="Some cleanup and refactoring of GameBoard.cs">
+      <change afterPath="$PROJECT_DIR$/BattleManager.cs" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Battlefield.cs" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Monster.cs" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Player.cs" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Rune.cs" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/UIBar.cs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/.idea.MatchThree/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.MatchThree/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Content/Content.mgcb" beforeDir="false" afterPath="$PROJECT_DIR$/Content/Content.mgcb" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/GameBoard.cs" beforeDir="false" afterPath="$PROJECT_DIR$/GameBoard.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/GamePiece.cs" beforeDir="false" afterPath="$PROJECT_DIR$/GamePiece.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/GamePiece.cs" beforeDir="false" afterPath="$PROJECT_DIR$/GamePiece/GamePiece.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/GamePieceFactory.cs" beforeDir="false" afterPath="$PROJECT_DIR$/GamePiece/GamePieceFactory.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/InputManager.cs" beforeDir="false" afterPath="$PROJECT_DIR$/InputManager.cs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/MainGame.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MainGame.cs" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -96,7 +104,7 @@
       <option name="presentableId" value="Default" />
       <updated>1730500400116</updated>
       <workItem from="1730500401421" duration="21454000" />
-      <workItem from="1730654088726" duration="55109000" />
+      <workItem from="1730654088726" duration="86679000" />
     </task>
     <task id="LOCAL-00001" summary="Match-3 skeleton in place: generating grid, swapping pieces, and checking for matches">
       <option name="closed" value="true" />
@@ -138,7 +146,15 @@
       <option name="project" value="LOCAL" />
       <updated>1731473328146</updated>
     </task>
-    <option name="localTasksCounter" value="6" />
+    <task id="LOCAL-00006" summary="Some cleanup and refactoring of GameBoard.cs">
+      <option name="closed" value="true" />
+      <created>1731558723885</created>
+      <option name="number" value="00006" />
+      <option name="presentableId" value="LOCAL-00006" />
+      <option name="project" value="LOCAL" />
+      <updated>1731558723885</updated>
+    </task>
+    <option name="localTasksCounter" value="7" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -164,6 +180,52 @@
     <MESSAGE value="Working bugs out of gamepiece movement and replacement" />
     <MESSAGE value="Match cascading now working correctly. Added movement animations." />
     <MESSAGE value="Worked bugs out of falling animations. Core match mechanics now complete." />
-    <option name="LAST_COMMIT_MESSAGE" value="Worked bugs out of falling animations. Core match mechanics now complete." />
+    <MESSAGE value="Some cleanup and refactoring of GameBoard.cs" />
+    <option name="LAST_COMMIT_MESSAGE" value="Some cleanup and refactoring of GameBoard.cs" />
+  </component>
+  <component name="XDebuggerManager">
+    <breakpoint-manager>
+      <breakpoints>
+        <line-breakpoint enabled="true" type="DotNet Breakpoints">
+          <url>file://$PROJECT_DIR$/BattleManager.cs</url>
+          <line>32</line>
+          <properties documentPath="$PROJECT_DIR$/BattleManager.cs" containingFunctionPresentation="Method 'OnMatchActivated'">
+            <startOffsets>
+              <option value="770" />
+            </startOffsets>
+            <endOffsets>
+              <option value="821" />
+            </endOffsets>
+          </properties>
+          <option name="timeStamp" value="29" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="DotNet Breakpoints">
+          <url>file://$PROJECT_DIR$/GameBoard.cs</url>
+          <line>223</line>
+          <properties documentPath="$PROJECT_DIR$/GameBoard.cs" containingFunctionPresentation="Method 'RemoveMatches'">
+            <startOffsets>
+              <option value="6658" />
+            </startOffsets>
+            <endOffsets>
+              <option value="6711" />
+            </endOffsets>
+          </properties>
+          <option name="timeStamp" value="31" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="DotNet Breakpoints">
+          <url>file://$PROJECT_DIR$/BattleManager.cs</url>
+          <line>35</line>
+          <properties documentPath="$PROJECT_DIR$/BattleManager.cs" containingFunctionPresentation="Method 'OnMatchActivated'">
+            <startOffsets>
+              <option value="933" />
+            </startOffsets>
+            <endOffsets>
+              <option value="967" />
+            </endOffsets>
+          </properties>
+          <option name="timeStamp" value="32" />
+        </line-breakpoint>
+      </breakpoints>
+    </breakpoint-manager>
   </component>
 </project>

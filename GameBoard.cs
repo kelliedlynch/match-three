@@ -25,6 +25,7 @@ public class GameBoard : DrawableGameComponent
     public IntVector2 TileSize;
 
     private event Action CascadeMatches;
+    public event MatchEventHandler MatchActivated;
     
     
     public GameBoard(Game game, Rectangle rect) : base(game)
@@ -42,8 +43,8 @@ public class GameBoard : DrawableGameComponent
 
     public void GenerateGrid()
     {
-        var tileX = (Bounds.Width / Columns) - Spacing * (Columns - 1);
-        var tileY = (Bounds.Height / Rows) - Spacing * (Rows - 1);
+        var tileX = (Bounds.Width - Spacing * (Columns - 1))/ Columns ;
+        var tileY = (Bounds.Height - Spacing * (Rows - 1))/ Rows;
         TileSize = new (tileX, tileY);
         GridRects = new Rectangle[Columns, Rows];
         InsertPositions = new Rectangle[Columns];
@@ -129,11 +130,13 @@ public class GameBoard : DrawableGameComponent
         CascadeMatches?.Invoke();
     }
 
-    public void ApplyGravity(bool recursive = false)
+    public void ApplyGravity()
     {
+        var shiftCount = 0;
         while (EmptySpacesExist())
         {
-            ShiftDown();
+            ShiftDown(shiftCount);
+            shiftCount++;
         }        
 
         foreach (var piece in GamePieces)
@@ -158,21 +161,21 @@ public class GameBoard : DrawableGameComponent
         return false;
     }
 
-    public void ShiftDown()
+    public void ShiftDown(int prevShifts = 0)
     {
         for (int i = Columns - 1; i >=0; i--)
         {
-            var piecesInserted = 0;
+            
             for (int j = Rows - 1; j >= 0; j--)
             {
                 if (GamePieces[i, j] == null)
                 {
                     if (j == 0)
                     {
-                        var yOffset = TileSize.Y * piecesInserted + Spacing * piecesInserted;
+                        var yOffset = TileSize.Y * prevShifts + Spacing * prevShifts;
                         SpawnNewPiece(i);
                         GamePieces[i, j].ScreenPosition += new IntVector2(0, -yOffset);
-                        piecesInserted++;
+                        
                         continue;
                     }
 
@@ -215,13 +218,12 @@ public class GameBoard : DrawableGameComponent
 
     public void RemoveMatches(Bag<Bag<GamePiece>> matches)
     {
+        var man = Game.Services.GetService<BattleManager>();
         foreach (var matchSet in matches)
         {
-            foreach (var piece in matchSet)
-            {
-                Game.Components.Remove(piece);
-                GamePieces[piece.GridPosition.X, piece.GridPosition.Y] = null;
-            }
+            MatchActivated?.Invoke(new MatchEventArgs(matchSet));
+
+            
         }
     }
 

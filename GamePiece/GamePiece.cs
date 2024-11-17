@@ -11,7 +11,7 @@ namespace MatchThree;
 public class GamePiece(Game game) : DrawableGameComponent(game)
 {
     public PieceType PieceType;
-    public int Level = 1;
+    public int Value = 1;
     public bool Highlighted = false;
     public bool Selected = false;
 
