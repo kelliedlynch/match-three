@@ -40,6 +40,11 @@ public class MainGame : Game
         _spriteBatch = new SpriteBatch(GraphicsDevice);
         Services.AddService(_spriteBatch);
 
+
+    }
+
+    protected override void BeginRun()
+    {
         var xOffset = (ScreenSize.X - GameBoardSize.X) / 2;
         var yOffset = ScreenSize.Y - GameBoardSize.Y - GameBoardPadding;
         var boardRect = new Rectangle(xOffset, yOffset, GameBoardSize.X, GameBoardSize.Y);
@@ -57,25 +62,15 @@ public class MainGame : Game
 
         for (int i = 0; i < 1; i++)
         {
-            var mon = new Monster(this);
+            var mon = new Monster();
             mon.FileName = "Graphics/Slime RPG Basic";
-            mon.MaxHitPoints = 100;
-            mon.CurrentHitPoints = 100;
+            mon.MaxHealth = 100;
+            mon.CurrentHealth = 100;
             monsters.Add(mon);
         }
         
         battleManager.InitializeBattle(monsters);
         battleManager.BeginBattle();
-        // battlefield.AddMonster(mon);
-        // battlefield.AddMonster(mon);
-        // battlefield.AddMonster(mon);
-        // battlefield.AddMonster(mon);
-
-    }
-
-    protected override void BeginRun()
-    {
-
     }
 
     protected override void Update(GameTime gameTime)

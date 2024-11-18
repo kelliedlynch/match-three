@@ -4,7 +4,7 @@ using MonoGame.Extended.Graphics;
 
 namespace MatchThree;
 
-public class UIBar(Game game) : DrawableGameComponent(game)
+public class UIBar 
 {
     private string _barBackLeft = "Graphics/barBack_horizontalLeft";
     private string _barBackMiddle = "Graphics/barBack_horizontalMid";
@@ -16,19 +16,19 @@ public class UIBar(Game game) : DrawableGameComponent(game)
     public int MaxValue;
     public int CurrentValue;
 
-    public UIBar(Game game, Rectangle bounds, int value, int maxValue) : this(game)
+    public UIBar(Rectangle bounds, int value, int maxValue) 
     {
         Bounds = bounds;
         MaxValue = maxValue;
         CurrentValue = value;
     }
 
-    public override void Draw(GameTime gameTime)
+    public void Draw(Game game, SpriteBatch spriteBatch)
     {
-        var spriteBatch = Game.Services.GetService<SpriteBatch>();
+        
         var bblTex = game.Content.Load<Texture2D>(_barBackLeft);
         var bbmTex = game.Content.Load<Texture2D>(_barBackMiddle);
-        var bbrTex = Game.Content.Load<Texture2D>(_barBackRight);
+        var bbrTex = game.Content.Load<Texture2D>(_barBackRight);
         var leftRect = new Rectangle(Bounds.X, Bounds.Y, bblTex.Width, Bounds.Height);
         var rightRect = new Rectangle(Bounds.X + Bounds.Width - bbrTex.Width, Bounds.Y, bbrTex.Width, Bounds.Height);
         var midRect = new Rectangle(Bounds.X + leftRect.Width, Bounds.Y, Bounds.Width - leftRect.Width - rightRect.Width, Bounds.Height);

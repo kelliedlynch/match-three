@@ -7,20 +7,18 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="3a042d36-8956-41ec-8878-fc782c9ef5f7" name="Changes" comment="Some cleanup and refactoring of GameBoard.cs">
-      <change afterPath="$PROJECT_DIR$/BattleManager.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Battlefield.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Monster.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Player.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Rune.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/UIBar.cs" afterDir="false" />
+    <list default="true" id="3a042d36-8956-41ec-8878-fc782c9ef5f7" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/Battle/BattlefieldEntity.cs" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Battle/TargetIndicator.cs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/.idea.MatchThree/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.MatchThree/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Content/Content.mgcb" beforeDir="false" afterPath="$PROJECT_DIR$/Content/Content.mgcb" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/BattleManager.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Battle/BattleManager.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Battlefield.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Battle/Battlefield.cs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/GameBoard.cs" beforeDir="false" afterPath="$PROJECT_DIR$/GameBoard.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/GamePiece.cs" beforeDir="false" afterPath="$PROJECT_DIR$/GamePiece/GamePiece.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/GamePieceFactory.cs" beforeDir="false" afterPath="$PROJECT_DIR$/GamePiece/GamePieceFactory.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/InputManager.cs" beforeDir="false" afterPath="$PROJECT_DIR$/InputManager.cs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/MainGame.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MainGame.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MatchThree.sln.DotSettings.user" beforeDir="false" afterPath="$PROJECT_DIR$/MatchThree.sln.DotSettings.user" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Monster.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Monster.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Rune.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Rune.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/UIBar.cs" beforeDir="false" afterPath="$PROJECT_DIR$/UIBar.cs" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -28,7 +26,7 @@
     <option name="LAST_RESOLUTION" value="IGNORE" />
   </component>
   <component name="DpaMonitoringSettings">
-    <option name="autoShow" value="false" />
+    <option name="firstShow" value="false" />
   </component>
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
@@ -46,9 +44,7 @@
   }
 }</component>
   <component name="HighlightingSettingsPerFile">
-    <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/DecompilerCache/decompiler/2dd5af81ce514a7dae965c311c11ef03f81000/57/195c6ecc/Thread.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="mock:///Users/kellie/Library/Mobile Documents/com~apple~CloudDocs/Coding/monogame/MatchThree/GameBoard.cs" root0="SKIP_HIGHLIGHTING" />
-    <setting file="mock:///Users/kellie/Library/Mobile Documents/com~apple~CloudDocs/Coding/monogame/MatchThree/GamePiece.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/DecompilerCache/decompiler/2dd5af81ce514a7dae965c311c11ef03f81000/d1/72df042a/Thread.cs" root0="FORCE_HIGHLIGHTING" />
   </component>
   <component name="MetaFilesCheckinStateConfiguration" checkMetaFiles="true" />
   <component name="ProjectColorInfo">{
@@ -65,6 +61,7 @@
   "keyToString": {
     ".NET Project.MatchThree.executor": "Run",
     "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.git.unshallow": "true",
     "git-widget-placeholder": "main",
     "node.js.detected.package.eslint": "true",
     "node.js.detected.package.tslint": "true",
@@ -104,7 +101,9 @@
       <option name="presentableId" value="Default" />
       <updated>1730500400116</updated>
       <workItem from="1730500401421" duration="21454000" />
-      <workItem from="1730654088726" duration="86679000" />
+      <workItem from="1730654088726" duration="105808000" />
+      <workItem from="1731947867204" duration="346000" />
+      <workItem from="1731948909806" duration="13603000" />
     </task>
     <task id="LOCAL-00001" summary="Match-3 skeleton in place: generating grid, swapping pieces, and checking for matches">
       <option name="closed" value="true" />
@@ -154,7 +153,15 @@
       <option name="project" value="LOCAL" />
       <updated>1731558723885</updated>
     </task>
-    <option name="localTasksCounter" value="7" />
+    <task id="LOCAL-00007" summary="Basic match-battle mechanics in place. It's messy.">
+      <option name="closed" value="true" />
+      <created>1731816580615</created>
+      <option name="number" value="00007" />
+      <option name="presentableId" value="LOCAL-00007" />
+      <option name="project" value="LOCAL" />
+      <updated>1731816580615</updated>
+    </task>
+    <option name="localTasksCounter" value="8" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -181,49 +188,43 @@
     <MESSAGE value="Match cascading now working correctly. Added movement animations." />
     <MESSAGE value="Worked bugs out of falling animations. Core match mechanics now complete." />
     <MESSAGE value="Some cleanup and refactoring of GameBoard.cs" />
-    <option name="LAST_COMMIT_MESSAGE" value="Some cleanup and refactoring of GameBoard.cs" />
+    <MESSAGE value="Basic match-battle mechanics in place. It's messy." />
+    <option name="LAST_COMMIT_MESSAGE" value="Basic match-battle mechanics in place. It's messy." />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
       <breakpoints>
         <line-breakpoint enabled="true" type="DotNet Breakpoints">
-          <url>file://$PROJECT_DIR$/BattleManager.cs</url>
-          <line>32</line>
-          <properties documentPath="$PROJECT_DIR$/BattleManager.cs" containingFunctionPresentation="Method 'OnMatchActivated'">
-            <startOffsets>
-              <option value="770" />
-            </startOffsets>
-            <endOffsets>
-              <option value="821" />
-            </endOffsets>
-          </properties>
-          <option name="timeStamp" value="29" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="DotNet Breakpoints">
-          <url>file://$PROJECT_DIR$/GameBoard.cs</url>
+          <url>file://$PROJECT_DIR$/Battle/GameBoard.cs</url>
           <line>223</line>
-          <properties documentPath="$PROJECT_DIR$/GameBoard.cs" containingFunctionPresentation="Method 'RemoveMatches'">
-            <startOffsets>
-              <option value="6658" />
-            </startOffsets>
-            <endOffsets>
-              <option value="6711" />
-            </endOffsets>
-          </properties>
+          <properties documentPath="$PROJECT_DIR$/GameBoard.cs" containingFunctionPresentation="Method 'RemoveMatches'" />
           <option name="timeStamp" value="31" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="DotNet Breakpoints">
-          <url>file://$PROJECT_DIR$/BattleManager.cs</url>
-          <line>35</line>
-          <properties documentPath="$PROJECT_DIR$/BattleManager.cs" containingFunctionPresentation="Method 'OnMatchActivated'">
+          <url>file://$PROJECT_DIR$/GameBoard.cs</url>
+          <line>143</line>
+          <properties documentPath="$PROJECT_DIR$/GameBoard.cs" containingFunctionPresentation="Method 'OnMoveCompleted'">
             <startOffsets>
-              <option value="933" />
+              <option value="4506" />
             </startOffsets>
             <endOffsets>
-              <option value="967" />
+              <option value="4531" />
             </endOffsets>
           </properties>
-          <option name="timeStamp" value="32" />
+          <option name="timeStamp" value="39" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="DotNet Breakpoints">
+          <url>file://$PROJECT_DIR$/GameBoard.cs</url>
+          <line>118</line>
+          <properties documentPath="$PROJECT_DIR$/GameBoard.cs" containingFunctionPresentation="Method 'OnCascadeMatches'">
+            <startOffsets>
+              <option value="4011" />
+            </startOffsets>
+            <endOffsets>
+              <option value="4034" />
+            </endOffsets>
+          </properties>
+          <option name="timeStamp" value="40" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>

@@ -2,116 +2,127 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Graphics;
-using Microsoft.Xna.Framework.Input;
 using MonoGame.Extended.Collections;
 using Roguelike.Utility;
 
 namespace MatchThree;
 
-public class GameBoard : DrawableGameComponent
+public class GameBoard(Game game, Rectangle bounds) : DrawableGameComponent(game)
 {
-    public int Rows = 6;
-    public int Columns = 6;
-    
-    public int Spacing = 10;
+    private int _rows = 6;
+    private int _columns = 6;
+
+    private int _spacing = 10;
     private GamePiece _selectedPiece;
-    // private GameBoardState _gameBoardState = GameBoardState.AwaitingInput;
-    private Bag<GamePiece> _movingPieces = new();
+    private readonly Bag<GamePiece> _movingPieces = [];
     public GamePiece[,] GamePieces;
-    public Rectangle[,] GridRects;
-    public Rectangle[] InsertPositions;
-    public Rectangle Bounds;
-    public IntVector2 TileSize;
+    private Rectangle[,] _gridRects;
+    private Rectangle[] _insertPositions;
+    private Rectangle _bounds = bounds;
+    private IntVector2 _tileSize;
+    private readonly Random _random = new();
 
     private event Action CascadeMatches;
-    public event MatchEventHandler MatchActivated;
+    public event Action<Bag<GamePiece>> MatchActivated;
     
     
-    public GameBoard(Game game, Rectangle rect) : base(game)
+    public override void Initialize()
     {
-        Bounds = rect;
-        
         CascadeMatches += OnCascadeMatches;
-        GamePieces = new GamePiece[Columns, Rows];
-        var man = game.Services.GetService<InputManager>();
+        GamePieces = new GamePiece[_columns, _rows];
+        var man = Game.Services.GetService<InputManager>();
         man.TouchEventCompleted += HandleTouchEvent;
         GenerateGrid();
         FillBoard();
-        CascadeMatches?.Invoke();
+        // CascadeMatches?.Invoke();
     }
 
-    public void GenerateGrid()
+    private void GenerateGrid()
     {
-        var tileX = (Bounds.Width - Spacing * (Columns - 1))/ Columns ;
-        var tileY = (Bounds.Height - Spacing * (Rows - 1))/ Rows;
-        TileSize = new (tileX, tileY);
-        GridRects = new Rectangle[Columns, Rows];
-        InsertPositions = new Rectangle[Columns];
-        var xPos = Bounds.X;
-        var yPos = Bounds.Y;
-        for (int i = 0; i < Columns; i++)
+        var tileX = (_bounds.Width - _spacing * (_columns - 1))/ _columns ;
+        var tileY = (_bounds.Height - _spacing * (_rows - 1))/ _rows;
+        _tileSize = new (tileX, tileY);
+        _gridRects = new Rectangle[_columns, _rows];
+        _insertPositions = new Rectangle[_columns];
+        var xPos = _bounds.X;
+        var yPos = _bounds.Y;
+        for (int i = 0; i < _columns; i++)
         {
-            InsertPositions[i] = new Rectangle(xPos, yPos - Spacing - TileSize.Y, TileSize.X, TileSize.Y);
-            for (int j = 0; j < Rows; j++)
+            _insertPositions[i] = new Rectangle(xPos, yPos - _spacing - _tileSize.Y, _tileSize.X, _tileSize.Y);
+            for (int j = 0; j < _rows; j++)
             {
-                GridRects[i, j] = new Rectangle(xPos, yPos, TileSize.X, TileSize.Y);
-                if (j < Rows - 1)
+                _gridRects[i, j] = new Rectangle(xPos, yPos, _tileSize.X, _tileSize.Y);
+                if (j < _rows - 1)
                 {
-                    yPos += TileSize.Y + Spacing;
+                    yPos += _tileSize.Y + _spacing;
                 }
                 else
                 {
-                    yPos = Bounds.Y;
+                    yPos = _bounds.Y;
                 }
             }
 
-            xPos += TileSize.X + Spacing;
+            xPos += _tileSize.X + _spacing;
         }
     }
 
-    public void FillBoard()
+    private void FillBoard()
     {
-        for (int i = 0; i < Columns; i++)
+        for (int i = 0; i < _columns; i++)
         {
-            for (int j = 0; j < Rows; j++)
+            for (int j = 0; j < _rows; j++)
             {
                 var newPiece = GamePieceFactory.GenerateRandom(Game, new IntVector2(i, j));
-                newPiece.Bounds = GridRects[i, j];
+                newPiece.Bounds = _gridRects[i, j];
                 Game.Components.Add(newPiece);
                 GamePieces[i, j] = newPiece;
             }
         }
+
+        
+        while (FindAllMatches().Count > 0)
+        {
+            var matches = FindAllMatches();
+            foreach (var set in matches)
+            {
+                var index = _random.Next(matches.Count - 1);
+                var piece = set.ToList()[index];
+                var newPiece = GamePieceFactory.GenerateRandom(Game, piece.GridPosition);
+                newPiece.Bounds = _gridRects[piece.GridPosition.X, piece.GridPosition.Y];
+                Game.Components.Add(newPiece);
+                GamePieces[piece.GridPosition.X, piece.GridPosition.Y] = newPiece;
+                Game.Components.Remove(piece);
+            }
+        }
     }
 
-    public void SwapPieces(GamePiece piece1, GamePiece piece2)
+    private void SwapPieces(GamePiece piece1, GamePiece piece2)
+    {
+        SwapPositions(piece1, piece2);
+        MovePieceTo(piece1, _gridRects[piece1.GridPosition.X, piece1.GridPosition.Y].Location);
+        MovePieceTo(piece2, _gridRects[piece2.GridPosition.X, piece2.GridPosition.Y].Location);
+    }
+
+    private void SwapPositions(GamePiece piece1, GamePiece piece2)
     {
         (piece1.GridPosition, piece2.GridPosition) = (piece2.GridPosition, piece1.GridPosition);
         GamePieces[piece1.GridPosition.X, piece1.GridPosition.Y] = piece1;
         GamePieces[piece2.GridPosition.X, piece2.GridPosition.Y] = piece2;
-        MovePieceTo(piece1, GridRects[piece1.GridPosition.X, piece1.GridPosition.Y].Location);
-        MovePieceTo(piece2, GridRects[piece2.GridPosition.X, piece2.GridPosition.Y].Location);
-        // piece1.MoveTo(piece2.Bounds.Location);
-        // piece2.MoveTo(piece1.Bounds.Location);
-
-        // CascadeMatches?.Invoke();
     }
 
-    public void OnCascadeMatches()
+    private void OnCascadeMatches()
     {
-        var allMatches = CheckForMatches();
+        var allMatches = FindAllMatches();
         if (allMatches.IsEmpty)
         {
-            // _gameBoardState = GameBoardState.AwaitingInput;
             return;
         }
-        // _gameBoardState = GameBoardState.PiecesMoving;
         RemoveMatches(allMatches);
         ApplyGravity();
         
     }
 
-    public void OnMoveCompleted(GamePiece piece)
+    private void OnMoveCompleted(GamePiece piece)
     {
         _movingPieces.Remove(piece);
         if (!_movingPieces.IsEmpty)
@@ -126,11 +137,10 @@ public class GameBoard : DrawableGameComponent
             return;
         }
         
-        
         CascadeMatches?.Invoke();
     }
 
-    public void ApplyGravity()
+    private void ApplyGravity()
     {
         var shiftCount = 0;
         while (EmptySpacesExist())
@@ -142,7 +152,7 @@ public class GameBoard : DrawableGameComponent
         foreach (var piece in GamePieces)
         {
             if(piece == null) continue;
-            var loc = GridRects[piece.GridPosition.X, piece.GridPosition.Y].Location;
+            var loc = _gridRects[piece.GridPosition.X, piece.GridPosition.Y].Location;
             if (piece.ScreenPosition == loc.ToVector2())
             {
                 continue;
@@ -151,7 +161,7 @@ public class GameBoard : DrawableGameComponent
         }
     }
 
-    public bool EmptySpacesExist()
+    private bool EmptySpacesExist()
     {
         foreach (var piece in GamePieces)
         {
@@ -161,20 +171,20 @@ public class GameBoard : DrawableGameComponent
         return false;
     }
 
-    public void ShiftDown(int prevShifts = 0)
+    private void ShiftDown(int prevShifts = 0)
     {
-        for (int i = Columns - 1; i >=0; i--)
+        for (int i = _columns - 1; i >=0; i--)
         {
             
-            for (int j = Rows - 1; j >= 0; j--)
+            for (int j = _rows - 1; j >= 0; j--)
             {
                 if (GamePieces[i, j] == null)
                 {
                     if (j == 0)
                     {
-                        var yOffset = TileSize.Y * prevShifts + Spacing * prevShifts;
-                        SpawnNewPiece(i);
-                        GamePieces[i, j].ScreenPosition += new IntVector2(0, -yOffset);
+                        var yOffset = _tileSize.Y * prevShifts + _spacing * prevShifts;
+                        var newPiece = SpawnNewPiece(i);
+                        newPiece.ScreenPosition += new IntVector2(0, -yOffset);
                         
                         continue;
                     }
@@ -192,12 +202,13 @@ public class GameBoard : DrawableGameComponent
         }
     }
 
-    private void SpawnNewPiece(int column)
+    private GamePiece SpawnNewPiece(int column)
     {
         var newPiece = GamePieceFactory.GenerateRandom(Game, new IntVector2(column, 0));
-        newPiece.Bounds = InsertPositions[column];
+        newPiece.Bounds = _insertPositions[column];
         GamePieces[column, 0] = newPiece;
         Game.Components.Add(newPiece);
+        return newPiece;
     }
     
     private void MovePieceTo(GamePiece piece, Point screenPosition)
@@ -205,7 +216,6 @@ public class GameBoard : DrawableGameComponent
         piece.MoveTo(screenPosition);
         _movingPieces.Add(piece);
         piece.MoveCompleted += OnMoveCompleted;
-        // _gameBoardState = GameBoardState.PiecesMoving;
     }
     
     private void DropPieceTo(GamePiece piece, Point screenPosition)
@@ -213,165 +223,157 @@ public class GameBoard : DrawableGameComponent
         piece.FallTo(screenPosition);
         _movingPieces.Add(piece);
         piece.MoveCompleted += OnMoveCompleted;
-        // _gameBoardState = GameBoardState.PiecesMoving;
     }
 
-    public void RemoveMatches(Bag<Bag<GamePiece>> matches)
+    private void RemoveMatches(Bag<Bag<GamePiece>> matches)
     {
-        var man = Game.Services.GetService<BattleManager>();
+        // var man = Game.Services.GetService<BattleManager>();
         foreach (var matchSet in matches)
         {
-            MatchActivated?.Invoke(new MatchEventArgs(matchSet));
-
-            
+            MatchActivated?.Invoke(matchSet);
         }
     }
 
-    public Bag<Bag<GamePiece>> CheckForMatches()
+    public bool AnyMatchesPossible()
     {
-        var pendingDeletion = new Bag<GamePiece>();
+        for (var i = 0; i < _columns - 2; i++)
+        {
+            for (var j = 0; j < _rows - 2; j++)
+            {
+                if (CanBeSwapped(GamePieces[i, j], GamePieces[i + 1, j]) ||
+                    CanBeSwapped(GamePieces[i, j], GamePieces[i, j + 1]))
+                {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    private bool CanBeSwapped(GamePiece piece1, GamePiece piece2)
+    {
+        SwapPositions(piece1, piece2);
+        foreach (var piece in new List<GamePiece> { piece1, piece2 })
+        {
+            var matches = new Bag<GamePiece>();
+            foreach (var dir in Direction.CardinalDirections)
+            {
+                matches.AddRange(MatchingPiecesInDirection(piece, dir));
+                if (matches.Count <= 1) continue;
+                SwapPositions(piece1, piece2);
+                return true;
+            }
+        }
+        SwapPositions(piece1, piece2);
+        return false;
+    }
+
+    private Bag<GamePiece> MatchingPiecesInDirection(GamePiece piece, IntVector2 direction)
+    {
+        var matches = new Bag<GamePiece>();
+        var testLoc = piece.GridPosition + direction;
+        
+        var testPiece = PieceAtGridPosition(testLoc);
+        if (testPiece == null) return matches;
+        while (testPiece.PieceType == piece.PieceType)
+        {
+            matches.Add(testPiece);
+            testLoc += direction;
+            testPiece = PieceAtGridPosition(testLoc);
+            if (testPiece == null) break;
+        }
+
+        return matches;
+    }
+
+    private GamePiece PieceAtGridPosition(IntVector2 location)
+    {
+        try
+        {
+            return GamePieces[location.X, location.Y];
+        }
+        catch 
+        {
+            return null; 
+        }
+    }
+
+    private Bag<Bag<GamePiece>> FindAllMatches()
+    {
+        // var pendingDeletion = new Bag<GamePiece>();
         var allMatchSets = new Bag<Bag<GamePiece>>();
         var verticalMatchSets = new Bag<Bag<GamePiece>>();
         var horizontalMatchSets = new Bag<Bag<GamePiece>>();
-        for (int i = 0; i < Columns ; i++)
+        for (int i = 0; i < _columns ; i++)
         {
-            for (int j = 0; j < Rows; j++)
+            for (int j = 0; j < _rows; j++)
             {
                 var currentPiece = GamePieces[i, j];
-                if (pendingDeletion.Contains(currentPiece))
-                {
-                    continue;
-                }
-
-                if (i < Columns - 2)
-                {
-                    var currentColumn = i;
-                    var hMatchSet = new Bag<GamePiece> { currentPiece };
-                    while (currentColumn < Columns - 1)
-                    {
-                        var rightPiece = GamePieces[currentColumn + 1, j];
-                        if (rightPiece.PieceType == currentPiece.PieceType)
-                        {
-                            hMatchSet.Add(rightPiece);
-                            currentColumn++;
-                        }
-                        else
-                        {
-                            break;
-                        }
-                    }
-
-                    if (hMatchSet.Count >= 3)
-                    {
-                        horizontalMatchSets.Add(hMatchSet);
-                    }
-                }
-
-
-                if (j < Rows - 2)
-                {
-                    var currentRow = j;
-                    var vMatchSet = new Bag<GamePiece> { currentPiece };
-                    while (currentRow < Rows - 1)
-                    {
-                        var downPiece = GamePieces[i, currentRow + 1];
-                        if (downPiece.PieceType == currentPiece.PieceType)
-                        {
-                            vMatchSet.Add(downPiece);
-                            currentRow++;
-                        }
-                        else
-                        {
-                            break;
-                        }
-                    }
-
-                    if (vMatchSet.Count >= 3)
-                    {
-                        verticalMatchSets.Add(vMatchSet);
-                    }
-                }
-
-            }
-            
-        }
-        foreach (var hMatchSet in horizontalMatchSets)
-        {
-            var overlappingSetFound = false;
-            foreach (var piece in hMatchSet)
-            {
-                    
-                    
-                foreach (var vMatchSet in verticalMatchSets)
-                {
-                        
-                    if (vMatchSet.Contains(piece))
-                    {
-                        var fullMatchSet = new Bag<GamePiece>();
-                        fullMatchSet.AddRange(vMatchSet);
-                        fullMatchSet.AddRange(hMatchSet);
-                        allMatchSets.Add(fullMatchSet);
-                        pendingDeletion.AddRange(fullMatchSet);
-                        overlappingSetFound = true;
-                        break;
-                    }
-                }
-                if (overlappingSetFound)
-                {
-                    break;
-                }
-            }
-
-            if (!overlappingSetFound)
-            {
-                allMatchSets.Add(hMatchSet);
-                pendingDeletion.AddRange(hMatchSet);
-            }
-        }
-
-        foreach (var vSet in verticalMatchSets)
-        {
-            var setAlreadyTracked = false;
-            foreach (var piece in vSet)
-            {
-                if (pendingDeletion.Contains(piece))
-                {
-                    setAlreadyTracked = true;
-                    break;
-                }
-                    
-            }
-
-            if (setAlreadyTracked)
-            {
-                continue;
-            }
                 
-            allMatchSets.Add(vSet);
-            pendingDeletion.AddRange(vSet);
+                if (i < _columns - 2 && !horizontalMatchSets.Any(x => x.Contains(currentPiece)))
+                {
+                    var hSet = new Bag<GamePiece>{currentPiece};
+                    hSet.AddRange(MatchingPiecesInDirection(currentPiece, Direction.Right));
+                    if (hSet.Count >= 3)
+                    {
+                        horizontalMatchSets.Add(hSet);
+                    }
+                }
+
+                if (j < _rows - 2 && !verticalMatchSets.Any(x => x.Contains(currentPiece))) 
+                {
+                    var vSet = new Bag<GamePiece>{currentPiece};
+                    vSet.AddRange(MatchingPiecesInDirection(currentPiece, Direction.Down));
+                    if (vSet.Count >= 3)
+                    {
+                        verticalMatchSets.Add(vSet);
+                    }
+                }
+
+            }
+        }
+        
+        foreach (var hvSet in horizontalMatchSets.Concat(verticalMatchSets))
+        {
+            var fullSet = new Bag<GamePiece>();
+            fullSet.AddRange(hvSet);
+            foreach (var alreadyMatched in allMatchSets)
+            {
+                if (alreadyMatched.Any(x => hvSet.Contains(x)))
+                {
+                    fullSet.AddRange(alreadyMatched);
+                    allMatchSets.Remove(alreadyMatched);
+                }
+            }
+            foreach (var piece in hvSet)
+            {
+                foreach (var hSet in horizontalMatchSets.Where(hSet => hSet.Contains(piece)))
+                {
+                    fullSet.AddRange(hSet);
+                }
+                foreach (var vSet in verticalMatchSets.Where(vSet => vSet.Contains(piece)))
+                {
+                    fullSet.AddRange(vSet);
+                }
+            }
+
+            
+            var bag = new Bag<GamePiece>();
+            fullSet.Distinct().ToList().ForEach(x => bag.Add(x));
+            
+            allMatchSets.Add(bag);
         }
 
-        // foreach (var piece in GamePieces)
-        // {
-        //     piece.Highlighted = false;
-        // }        
-        // foreach (var set in allMatchSets)
-        // {
-        //     foreach (var piece in set)
-        //     {
-        //         piece.Highlighted = true;
-        //     }
-        // }
         return allMatchSets;
     }
 
-    public GamePiece GetPieceAtPosition(Point position)
+    private GamePiece PieceAtScreenPosition(Point position)
     {
-        for (int i = 0; i < Columns; i++)
+        for (int i = 0; i < _columns; i++)
         {
-            for (int j = 0; j < Rows; j++)
+            for (int j = 0; j < _rows; j++)
             {
-                if (GridRects[i, j].Contains(position))
+                if (_gridRects[i, j].Contains(position))
                 {
                     return GamePieces[i, j];
                 }
@@ -381,124 +383,46 @@ public class GameBoard : DrawableGameComponent
         return null;
     }
 
-    public void HandleTouchEvent(TouchEventArgs args)
+    private void HandleTouchEvent(TouchEventArgs args)
     {
-        // if (_gameBoardState != GameBoardState.AwaitingInput)
-        // {
-        //     return;
-        // }
-        var startPiece = GetPieceAtPosition(args.TouchDown);
-        var endPiece = GetPieceAtPosition(args.TouchUp);
-        if (startPiece is not null && endPiece is not null && startPiece == endPiece)
+        var startPiece = PieceAtScreenPosition(args.TouchDown);
+        var endPiece = PieceAtScreenPosition(args.TouchUp);
+        if (startPiece is null || endPiece is null || startPiece != endPiece) return;
+        if (endPiece.Selected)
         {
-            if (endPiece.Selected)
-            {
-                endPiece.Selected = false;
-                _selectedPiece = null;
-                return;
-            }
-            
-            if (_selectedPiece is not null && _selectedPiece != endPiece)
-            {
-
-                // var swap = new SwapEventArgs(_selectedPiece, endPiece);
-                
-                SwapPieces(_selectedPiece, endPiece);
-                _selectedPiece.Selected = false;
-                endPiece.Selected = false;
-                _selectedPiece = null;
-                
-                // _gameBoardState = GameBoardState.PiecesMoving;
-                return;
-            }
-
-            if (_selectedPiece is null)
-            {
-                _selectedPiece = endPiece;
-                endPiece.Selected = true;
-                return;
-            }
-
+            endPiece.Selected = false;
+            _selectedPiece = null;
             return;
         }
-    }
+            
+        if (_selectedPiece is not null && _selectedPiece != endPiece)
+        {
+            SwapPieces(_selectedPiece, endPiece);
+            _selectedPiece.Selected = false;
+            endPiece.Selected = false;
+            _selectedPiece = null;
+                
+            return;
+        }
 
-    public override void Update(GameTime gameTime)
-    {
-        // var moving = false;
-        // foreach (var piece in GamePieces)
-        // {
-        //     if (piece.MoveState == MoveState.Moving)
-        //     {
-        //         moving = true;
-        //         break;
-        //     }
-        // }
-        //
-        // if (moving)
-        // {
-        //     _gameBoardState = GameBoardState.PiecesMoving;
-        //     return;
-        // }
-        // _gameBoardState = GameBoardState.AwaitingInput;
-    }
-
-    public override void Draw(GameTime gameTime)
-    {
-        var spriteBatch = Game.Services.GetService<SpriteBatch>();
-
-        var xPos = 0;
-        var yPos = 0;
-
-
-
-        
-        // for (int i = 0; i < Columns; i++)
-        // {
-        //     for (int j = 0; j < Rows; j++)
-        //     {
-        //         var destinationRect = new Rectangle(xPos, yPos, TileSize.X, TileSize.Y);
-        //         var tex = Game.Content.Load<Texture2D>("Graphics/" + GamePieces[i, j].FileName);
-        //         var tempColor = Color.White;
-        //         if (_selectedPiece == GamePieces[i, j])
-        //         {
-        //             // tempColor = Color.Gray;
-        //             GamePieces[i, j].Highlighted = true;
-        //             destinationRect = new Rectangle(xPos - Spacing, yPos - Spacing, TileSize.X + Spacing * 2,
-        //                 TileSize.Y + Spacing * 2);
-        //         }
-        //         spriteBatch.Draw(tex, destinationRect, tempColor);
-        //
-        //         if (j < Rows - 1)
-        //         {
-        //             yPos += TileSize.Y + Spacing;
-        //         }
-        //         else
-        //         {
-        //             yPos = 0;
-        //         }
-        //     }
-        //
-        //     xPos += TileSize.X + Spacing;
-        // }
-        
-        base.Draw(gameTime);
+        if (_selectedPiece is not null) return;
+        _selectedPiece = endPiece;
+        endPiece.Selected = true;
     }
 
 }
 
-public enum GameBoardState
+public static class Direction
 {
-    AwaitingInput,
-    PiecesMoving
-}
+    public static IntVector2 Up { get; } = new (0, -1);
+    public static IntVector2 Down { get; } = new (0, 1);
+    public static IntVector2 Left { get; } = new (-1, 0);
 
-public delegate void SwapEventHandler(SwapEventArgs args);
+    public static IntVector2 Right { get; } = new (1, 0);
 
-public class SwapEventArgs(GamePiece selectedPiece, GamePiece endPiece) : EventArgs
-{
-    public GamePiece FirstPiece;
-    public GamePiece SecondPiece;
-  
-
+    // public static IntVector2 UpLeft = Up + Left;
+    // public static IntVector2 UpRight = Up + Right;
+    // public static IntVector2 DownLeft = Down + Left;
+    // public static IntVector2 DownRight = Down + Right;
+    public static readonly List<IntVector2> CardinalDirections = [Up, Down, Left, Right];
 }
